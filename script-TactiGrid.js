@@ -917,6 +917,64 @@
             }
         }
 
+        if (distP2P1 == 3 && players.P2.camouflaged == true){ //maybe take a chance and sneak in closer, under the radar! Or maybe retreat.
+            let moveChoices = [];
+            let moveSelectedPosition;
+            let possibleChosenKey = null;
+            let count = 0;
+            //find a possible move that will keep P1 camouflaged
+            const possibleDirections = [{
+                row: -1,
+                col: 0,
+                key: "up"
+            }, // up
+            {
+                row: 1,
+                col: 0,
+                key: "down"
+            }, // down
+            {
+                row: 0,
+                col: -1,
+                key: "left"
+            }, // left
+            {
+                row: 0,
+                col: 1,
+                key: "right"
+            } // right
+            ];
+            while (possibleChosenKey == null && count < 20) {
+                const possibleDir = possibleDirections[Math.floor(Math.random() * possibleDirections.length)];
+                const possibleNewRow = players.P2.row + possibleDir.row;
+                const possibleNewCol = players.P2.col + possibleDir.col;
+
+                // check if move is inside grid and still camouflaged
+                if (possibleNewRow >= 0 && possibleNewRow < gridSize && possibleNewCol >= 0 && possibleNewCol < gridSize && grid[possibleNewRow][possibleNewCol] == players.P2.camouflagedColor) {
+                    possibleChosenKey = possibleDir.key; // store the corresponding key
+                }
+                count = count + 1;
+            }
+
+            moveChoices.push(0); //add camouflage-remain still choice to array
+
+            if (possibleChosenKey != null){
+                moveChoices.push(1); //move randomly, either closer or farther while camouflaged
+                moveChoices.push(1);
+            }
+
+            let moveSelect = Math.floor(Math.random() * moveChoices.length);
+            moveSelectedPosition = moveChoices[moveSelect];
+            switch (moveSelectedPosition) {
+                case 0:
+                    return "camouflage";
+                case 1:
+                    return possibleChosenKey;
+
+            }
+
+        }
+
         if (distP2P1 == 3) { //This time take into account doors. This distance is based on "assumed position".
                              //This assumption can change. So if P1 constantly remains still, P2 doesn't know this, and so this situation isn't locked in.
             return "camouflage"; //Camouflage in this situation, later add glow option?
@@ -1470,7 +1528,7 @@
         if (gameOver) return; // ignore actionKeys if game ended
         if (btnEl.disabled) return;  // extra safety
         isProcessActionKeySuccessful = processActionKey(actionKey);
-        console.log("isProcessActionKeySuccessful",isProcessActionKeySuccessful);
+        //console.log("isProcessActionKeySuccessful",isProcessActionKeySuccessful);
         // Visual feedback
         btnEl.classList.add("pressed");
         setTimeout(() => btnEl.classList.remove("pressed"), 150);
