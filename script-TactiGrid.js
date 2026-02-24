@@ -869,10 +869,18 @@
         let chosenMove;
         //Step 2: Decision table based on Distance States (16 theoretical, 8 meaningful)
         if (((Math.abs(players.P2.row - assumedP1Pos.row) + Math.abs(players.P2.col - assumedP1Pos.col)) <= 2) && (players.P1.camouflaged == false)) { //Dist P2P1 without doors taken into account
-            return "attack";
+            return "attack"; //Attack to win
         }
 
-        if (distP2P1 <= 2) { //Dist P2P1 with doors taken into account. In this case, don't move through the door
+        if (players.P2.row == 0 && players.P2.col == 1) { //player 2 is one step away from winning corner -Move to win
+            return "left";
+        }
+
+        if (players.P2.row == 1 && players.P2.col == 0) { //player 2 is one step away from winning corner -Move to win
+            return "up";
+        }
+
+        if (distP2P1 <= 2) { //It's a little bit of a patch for these situations. Dist P2P1 with doors taken into account. In these cases, don't move through the door
             if (players.P2.row == 3 && players.P2.col == 5) { //player 2 at purple door
                 return "left";
             }
@@ -893,9 +901,9 @@
             if (players.P2.glows > 0) {
                 moveChoices.push(1); //add glow choice to array
                 moveChoices.push(1); //make glow choice more likely
-                moveChoices.push(1); //make glow choice more likely
             }
             moveChoices.push(0); //add attack choice to array
+            moveChoices.push(2); //add camouflage-remain still choice to array
             let moveSelect = Math.floor(Math.random() * moveChoices.length);
             moveSelectedPosition = moveChoices[moveSelect];
             switch (moveSelectedPosition) {
@@ -903,22 +911,29 @@
                     return "attack";
                 case 1:
                     return "glow";
+                case 2:
+                    return "camouflage";
 
             }
         }
 
-        if (distP2P1 == 3) { //This time take into account doors
-            return "camouflage"; //Camouflage in this situation, later add glow option
+        if (distP2P1 == 3) { //This time take into account doors. This distance is based on "assumed position".
+                             //This assumption can change. So if P1 constantly remains still, P2 doesn't know this, and so this situation isn't locked in.
+            return "camouflage"; //Camouflage in this situation, later add glow option?
         }
-
-        if (distP2P1 <= distP2ToP1Corner) {
+        //If P2 would lose a race to its winning corner compared to P1 racing to its winning corner,
+        //then P2 should move closer to P1 and not worry about the race.
+        if (distP1ToP2Corner <= distP2ToP1Corner) { //If P2 is closer to P1 than P2 is from the winning corner
             target = assumedP1Pos;
             chosenMove = moveToward(players.P2, target);
             //console.log("chosenMove", chosenMove);
             return chosenMove;
         }
 
-        if (distP2P1 > distP2ToP1Corner) {
+
+        //If P2 would win a race to its winning corner compared to P1 racing to its winning corner,
+        //then P2 should move closer to its winning corner.
+        if (distP1ToP2Corner > distP2ToP1Corner) {
             target = P1Corner;
             chosenMove = moveToward(players.P2, target);
             return chosenMove;
