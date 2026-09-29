@@ -1,7 +1,8 @@
 {
   "name": "TactiGrid",
   "short_name": "TactiGrid",
-  "start_url": ".",
+  "id": "/?v=2",
+  "start_url": "./?v=2",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",
