@@ -327,7 +327,8 @@ filter: grayscale(100%);
   }
 
   .cell {
-    font-size: clamp(26px, 5.5vmin, 40px);
+    /* 🚀 Increased by 50% for mobile viewports */
+    font-size: clamp(39px, 8.25vmin, 60px);
   }
 
   .controls-container {
