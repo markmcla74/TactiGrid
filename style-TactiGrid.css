@@ -226,18 +226,18 @@ background: #005fcc;
   justify-content: center;
   gap: 10px;
 }
-/* Shared button rule (scaled down by ~33%) */
+/* Shared button rule (+10% increase) */
 .dpad button,
 .btn-glow,
 .btn-camouflage,
 .btn-attack {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.07rem;
+  font-size: 1.18rem;
   background-color: #444;
   color: white;
   border: none;
@@ -248,18 +248,16 @@ background: #005fcc;
   transform: none;
   transition: opacity 0.2s ease, transform 0.1s ease;
 }
-
 /* Override font size specifically for the glow button to prevent line wrap */
 .btn-glow {
-  font-size: 1.07rem !important; /* Drops size so both 💡💡 fit horizontally */
+  font-size: 1.18rem !important; /* Drops size so both 💡💡 fit horizontally */
   white-space: nowrap !important; /* Strictly forbids multi-line wrapping */
   letter-spacing: -1px; /* Brings the lightbulbs close together */
 }
-
 /* Extra sizing boost for single-emoji action buttons */
 .btn-camouflage,
 .btn-attack {
-  font-size: 1.67rem !important; /* 🚀 Scales up 🔅 and 🎯 to fit the 40px container */
+  font-size: 1.84rem !important; /* 🚀 Scales up 🔅 and 🎯 to fit the 44px container */
 }
 /* Force horizontal alignment for multi-emoji Glow button */
 /* Force Glow button into a strict horizontal row container */
