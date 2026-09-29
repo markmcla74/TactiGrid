@@ -1,6 +1,5 @@
     const gridSize = 6;
     const colors = ["G", "B"];
-    const turnIndicator = document.getElementById("turn-indicator");
     let randomNumber;
     let gameOver = false; //flag used to disable movement when game is over
     let isOnePlayer = false;
@@ -17,10 +16,14 @@
     let grid = [];
     // Movement offsets
     const directions = {
-        up: [-1, 0], // up
-        left: [0, -1], // left
-        down: [1, 0], // down
-        right: [0, 1], // right
+        "btn-p1-up": [-1, 0],
+        "btn-p1-down": [1, 0],
+        "btn-p1-left": [0, -1],
+        "btn-p1-right": [0, 1],
+        "btn-p2-up": [-1, 0],
+        "btn-p2-down": [1, 0],
+        "btn-p2-left": [0, -1],
+        "btn-p2-right": [0, 1],
     };
 
 
@@ -113,19 +116,14 @@
                 }
             }
         }
-        document.getElementById("game").innerHTML = html;
-        if (currentPlayer === "P1") {
-            turnIndicator.textContent = "Player 1's Turn";
-            turnIndicator.style.color = "lightgray"; // Player 1 cue
-            turnIndicator.style.backgroundColor = "black";
-        } else {
-            turnIndicator.textContent = "Player 2's Turn";
-            turnIndicator.style.color = "lightgray"; // Player 2 cue
-            turnIndicator.style.backgroundColor = "blue";
-        }
 
-        document.getElementById("p1-glows").textContent = `P1 Glows: ${players.P1.glows}`;
-        document.getElementById("p2-glows").textContent = `P2 Glows: ${players.P2.glows}`;
+        document.getElementById("game").innerHTML = html;
+        //possible turn tracking stuff
+        //if (currentPlayer === "P1") {
+        //} else {
+        //}
+
+
     }
 
     function resetGame() {
@@ -159,12 +157,8 @@
         gameOver = false;
 
 
-        // Reset HUD
-        document.getElementById("p1-glows").textContent = `P1 Glows: 2`;
-        document.getElementById("p2-glows").textContent = `P2 Glows: 2`;
-        document.getElementById("turn-indicator").textContent = "Player 1's Turn";
-        document.getElementById("turn-indicator").style.backgroundColor = "black";
-        document.getElementById("turn-indicator").style.color = "white";
+
+
 
         // Generate grid with random colors
         for (let r = 0; r < gridSize; r++) {
@@ -181,17 +175,23 @@
         // Show overlay again
         document.getElementById("overlay").style.display = "flex";
         setGameButtonsDisabled(false);
+
+        // 💡 Sync the glow button UI back to 2 lightbulbs and enable it
+        updateGlowButton("P1");
+        updateGlowButton("P2");
+
+
     }
 
-    renderGrid();
-
-
-
+    //renderGrid();
 
     function processPlayerMove(actionKey) {
         if (gameOver) return 1; // ignore actionKeys if game ended
         let enterDoor = false;
+        let distance;
+        let camouflagedColor;
         let player, opponent;
+
         if (currentPlayer === "P1") {
             player = players.P1;
             opponent = players.P2;
@@ -200,280 +200,590 @@
             opponent = players.P1;
         }
 
-        // --- Attack Activation ---
-        if ((currentPlayer === "P1" && actionKey === "attack") ||
-            (currentPlayer === "P2" && actionKey === "attack")) {
-            glowAttack(player, opponent);
-            AudioEngine.playVictoryChime();
-            AudioEngine.stopAllAfter(2); // both end in 2 seconds
-            let distance = Math.abs(player.row - opponent.row) + Math.abs(player.col - opponent.col);
-            if (distance <= 2) {
-                // Successful attack
-                player.symbol = "●";
-                opponent.symbol = "💥";
-                document.getElementById("reset-btn").disabled = false;
-                gameOver = true;
-                renderGrid();
-                setTimeout(() => {
-                    //console.log(currentPlayer);
-                    if (currentPlayer === "P1") {
-                        showMessage(`Player 1 wins with a successful attack!`);
-                    } else {
-                        showMessage(`Player 2 wins with a successful attack!`);
-                        //resetGame();
-                    }
-                }, 50);
-            } else {
-                // Failed attack → opponent wins
-                opponent.symbol = "●";
-                player.symbol = "💥";
-                document.getElementById("reset-btn").disabled = false;
-                gameOver = true;
-                renderGrid();
-                setTimeout(() => {
-                    if (currentPlayer === "P1") {
+        let dir = directions[actionKey];
+
+
+        // --- ACTIONS ---
+
+            switch (actionKey) {
+                //Attack Actions
+                case "btn-p1-attack":
+                    glowAttack(player, opponent);
+                    AudioEngine.playVictoryChime();
+                    AudioEngine.stopAllAfter(2); // both end in 2 seconds
+                    distance = Math.abs(player.row - opponent.row) + Math.abs(player.col - opponent.col);
+                    if (distance <= 2) {
+                        // Successful attack
+                        player.symbol = "●";
+                        opponent.symbol = "💥";
+                        document.getElementById("reset-btn").disabled = false;
+                        gameOver = true;
+                        renderGrid();
+                        setTimeout(() => {
+                            showMessage(`Player 1 wins with a successful attack!`);
+                        }, 50);
+                     } else {
+                        // Failed attack → opponent wins
+                        opponent.symbol = "●";
+                        player.symbol = "💥";
+                        document.getElementById("reset-btn").disabled = false;
+                        gameOver = true;
+                        renderGrid();
+                        setTimeout(() => {
                         showMessage(`Player 1 missed! Player 2 wins!`);
-                    } else showMessage(`Player 2 missed! Player 1 wins!`);
-                    // resetGame();
-                }, 50);
-            }
-            return 1;
-        }
-
-        // --- Glow opponent Activation ---
-        if ((currentPlayer === "P1" && actionKey === "glow") ||
-            (currentPlayer === "P2" && actionKey === "glow")) {
-            //playChime();
-            if (currentPlayer === "P1") {
-                AudioEngine.playPlayerChime("P1");
-            } else {
-                AudioEngine.playPlayerChime("P2");
-            }
-
-            if (player.glows > 0) {
-                player.glows--;
-
-                // Reveal opponent if camouflaged
-                if (opponent.camouflaged) {
-                    opponent.camouflaged = false;
-                    opponent.symbol = "●";
-                    glowOpponent(opponent);
-                }
-                //alert(`${currentPlayer} used a Light Burst! Opponent revealed!`);
-            } else {
-                //alert(`${currentPlayer} used a Light Burst... but opponent wasn’t hidden.`);
-            }
-
-            if ((opponent.camouflaged == false) && (currentPlayer === "P2")) { //i.e. P1 is glowed
-                p1CamouflageTurns = 0;
-            }
-            // End turn
-            return 1;
-        }
-
-
-        // --- Camouflage actionKeys ---
-        if ((currentPlayer === "P1" && actionKey === "camouflage") ||
-            (currentPlayer === "P2" && actionKey === "camouflage")) {
-            // playChime();
-            if (currentPlayer === "P1") {
-                AudioEngine.playPlayerChime("P1");
-            } else {
-                AudioEngine.playPlayerChime("P2");
-            }
-            const camouflagedColor = grid[player.row][player.col];
-
-            player.camouflaged = true;
-            player.camouflagedColor = camouflagedColor;
-            player.symbol = "";
-
-            if ((player.camouflaged == true) && (currentPlayer === "P1")) {
-                p1CamouflageTurns++;
-            }
-
-            // End turn after camouflage
-            return 1; // don’t check movement
-        }
-        // ---Not allowed move actions, attempting to move outside of the grid ---
-        if (currentPlayer === "P1" && player.row == 0 && player.col != 2 && actionKey === "up") {
-            //checkCornerWin();
-            return 0;
-        }
-        if (currentPlayer === "P2" && player.row == 0 && player.col != 2 && actionKey === "up") {
-            //checkCornerWin();
-            return 0;
-        }
-        if (currentPlayer === "P1" && player.row == 5 && player.col != 2 && actionKey === "down") {
-            //checkCornerWin();
-            return 0;
-        }
-        if (currentPlayer === "P2" && player.row == 5 && player.col != 2 && actionKey === "down") {
-            //checkCornerWin();
-            return 0;
-        }
-        if (currentPlayer === "P1" && player.row != 3 && player.col == 0 && actionKey === "left") {
-            //checkCornerWin();
-            return 0;
-        }
-        if (currentPlayer === "P2" && player.row != 3 && player.col == 0 && actionKey === "left") {
-            //checkCornerWin();
-            return 0;
-        }
-        if (currentPlayer === "P1" && player.row != 3 && player.col == 5 && actionKey === "right") {
-            //checkCornerWin();
-            return 0;
-        }
-        if (currentPlayer === "P2" && player.row != 3 && player.col == 5 && actionKey === "right") {
-            //checkCornerWin();
-            return 0;
-        }
-
-
-        // ---Allowed Move Actions ---
-        if ((currentPlayer === "P1" && actionKey === "up") ||
-            (currentPlayer === "P1" && actionKey === "left") ||
-            (currentPlayer === "P1" && actionKey === "down") ||
-            (currentPlayer === "P1" && actionKey === "right") ||
-            (currentPlayer === "P2" && actionKey === "up") ||
-            (currentPlayer === "P2" && actionKey === "left") ||
-            (currentPlayer === "P2" && actionKey === "down") ||
-            (currentPlayer === "P2" && actionKey === "right")) {
-
-
-
-            const dir = directions[actionKey];
-            let newRow = player.row + dir[0];
-            let newCol = player.col + dir[1];
-
-
-            //check blue door at row 3, col 0 for Player 1
-            if (currentPlayer === "P1" && player.row === 3 && player.col === 0 && actionKey === "left" && enterDoor === false) {
-                AudioEngine.playPlayerChime("P1");
-                newRow = 3;
-                newCol = 2;
-                enterDoor = true;
-            }
-
-
-            //check blue door at row 3, col 0 for Player 2
-            if (currentPlayer === "P2" && player.row === 3 && player.col === 0 && actionKey === "left" && enterDoor === false) {
-                AudioEngine.playPlayerChime("P2");
-                newRow = 3;
-                newCol = 2;
-                enterDoor = true;
-
-            }
-
-            //check purple door at row 3, col 5 for Player 1
-            if (currentPlayer === "P1" && player.row === 3 && player.col === 5 && actionKey === "right" && enterDoor === false) {
-                AudioEngine.playPlayerChime("P1");
-                newRow = 2;
-                newCol = 3;
-                enterDoor = true;
-            }
-
-            //check purple door at row 3, col 5 for Player 2
-            if (currentPlayer === "P2" && player.row === 3 && player.col === 5 && actionKey === "right") {
-                AudioEngine.playPlayerChime("P2");
-                newRow = 2;
-                newCol = 3;
-                enterDoor = true;
-            }
-
-            //check orange door at row 0, col 2 for Player 1
-            if (currentPlayer === "P1" && player.row === 0 && player.col === 2 && actionKey === "up") {
-                AudioEngine.playPlayerChime("P1");
-                newRow = 2;
-                newCol = 2;
-                enterDoor = true;
-            }
-
-            //check orange door at row 0, col 2 for Player 2
-            if (currentPlayer === "P2" && player.row === 0 && player.col === 2 && actionKey === "up") {
-                AudioEngine.playPlayerChime("P2");
-                newRow = 2;
-                newCol = 2;
-                enterDoor = true;
-            }
-
-            //check red door at row 5, col 2 for Player 1
-            if (currentPlayer === "P1" && player.row === 5 && player.col === 2 && actionKey === "down") {
-                AudioEngine.playPlayerChime("P1");
-                newRow = 3;
-                newCol = 3;
-                enterDoor = true;
-            }
-
-            //check red door at row 5, col 2 for Player 1
-            if (currentPlayer === "P2" && player.row === 5 && player.col === 2 && actionKey === "down") {
-                AudioEngine.playPlayerChime("P2");
-                newRow = 3;
-                newCol = 3;
-                enterDoor = true;
-            }
-
-            if (enterDoor === true) {
-                player.row = newRow;
-                player.col = newCol;
-
-
-                // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
-                if (player.camouflaged) {
-                    if (grid[player.row][player.col] !== player.camouflagedColor) {
-                        // Different color → break camouflage
-                        player.camouflaged = false;
-                        player.camouflagedColor = null;
-                        player.symbol = "●";
+                        }, 50);
                     }
-                }
-
-                //check corner win
-                // checkCornerWin();
-                if ((player.camouflaged == true) && (currentPlayer === "P1")) {
-                    p1CamouflageTurns++;
-                }
-                if ((player.camouflaged == false) && (currentPlayer === "P1")) {
-                    p1CamouflageTurns = 0;
-                }
-                return 1;
-            }
-
-            // Stay inside grid bounds for all other cases
-            if (enterDoor === false) {
-                //playChime();
-                if (currentPlayer === "P1") {
+                    return 1;
+                    break;
+                case "btn-p2-attack":
+                    glowAttack(player, opponent);
+                    AudioEngine.playVictoryChime();
+                    AudioEngine.stopAllAfter(2); // both end in 2 seconds
+                    distance = Math.abs(player.row - opponent.row) + Math.abs(player.col - opponent.col);
+                    if (distance <= 2) {
+                        // Successful attack
+                        player.symbol = "●";
+                        opponent.symbol = "💥";
+                        document.getElementById("reset-btn").disabled = false;
+                        gameOver = true;
+                        renderGrid();
+                        setTimeout(() => {
+                            showMessage(`Player 2 wins with a successful attack!`);
+                        }, 50);
+                    } else {
+                        // Failed attack → opponent wins
+                        opponent.symbol = "●";
+                        player.symbol = "💥";
+                        document.getElementById("reset-btn").disabled = false;
+                        gameOver = true;
+                        renderGrid();
+                        setTimeout(() => {
+                            showMessage(`Player 2 missed! Player 1 wins!`);
+                        }, 50);
+                    }
+                    return 1;
+                    break;
+                case "btn-p1-glow":
+                    if (player.glows <= 0) return 0; // Prevent turn from ending if out of glows
                     AudioEngine.playPlayerChime("P1");
-                } else {
-                    AudioEngine.playPlayerChime("P2");
-                }
-                player.row = newRow;
-                player.col = newCol;
-
-
-                // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
-                if (player.camouflaged) {
-                    if (grid[player.row][player.col] !== player.camouflagedColor) {
-                        // Different color → break camouflage
-                        player.camouflaged = false;
-                        player.camouflagedColor = null;
-                        player.symbol = "●";
+                    console.log("here glow");
+                    if (player.glows > 0) {
+                        player.glows--;
+                        updateGlowButton("P1");
+                        // Reveal opponent if camouflaged
+                        if (opponent.camouflaged) {
+                            opponent.camouflaged = false;
+                            opponent.symbol = "●";
+                            glowOpponent(opponent);
+                        }
                     }
-                }
+                    return 1;
+                    break;
+                case "btn-p2-glow":
+                    if (player.glows <= 0) return 0; // Prevent turn from ending if out of glows
+                    AudioEngine.playPlayerChime("P2");
+                    if (player.glows > 0) {
+                        player.glows--;
+                        updateGlowButton("P2");
+                        // Reveal opponent if camouflaged
+                        if (opponent.camouflaged) {
+                            opponent.camouflaged = false;
+                            opponent.symbol = "●";
+                            glowOpponent(opponent);
+                        }
+                    }
+                    if (opponent.camouflaged == false) { // i.e. P1 is revealed needed for 1 player mode
+                        p1CamouflageTurns = 0;
+                    }
+                    //updateGlowButton("P2");
+                    return 1;
+                    break;
+                case "btn-p1-camouflage":
+                    // --- Camouflage actionKeys ---
+                    AudioEngine.playPlayerChime("P1");
+                    camouflagedColor = grid[player.row][player.col];
+                    player.camouflaged = true;
+                    player.camouflagedColor = camouflagedColor;
+                    player.symbol = "";
+                    p1CamouflageTurns++; //needed to track for 1 player mode
+                    // End turn after camouflage
+                    return 1; // don’t check movement
+                    break;
+                case "btn-p2-camouflage":
+                    // --- Camouflage actionKeys ---
+                    AudioEngine.playPlayerChime("P2");
+                    camouflagedColor = grid[player.row][player.col];
+                    player.camouflaged = true;
+                    player.camouflagedColor = camouflagedColor;
+                    player.symbol = "";
+                    // End turn after camouflage
+                    return 1; // don’t check movement
+                    break;
+                case "btn-p1-up":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row == 0 && player.col != 2) {
+                        return 0;
+                    }
 
-                //check corner win
-                checkCornerWin();
-                if ((player.camouflaged == true) && (currentPlayer === "P1")) {
-                    p1CamouflageTurns++;
-                }
-                if ((player.camouflaged == false) && (currentPlayer === "P1")) {
-                    p1CamouflageTurns = 0;
-                }
-                return 1;
+                    //check orange door at row 0, col 2 for Player 1
+                    if (player.row === 0 && player.col === 2) {
+                        AudioEngine.playPlayerChime("P1");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 2;
+                        player.col = 2;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P1");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    break;
+                case "btn-p2-up":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row == 0 && player.col != 2) {
+                        return 0;
+                    }
+                    //check orange door at row 0, col 2 for Player 2. Funnels to row 2, col 2
+                    if (player.row === 0 && player.col === 2) {
+                        AudioEngine.playPlayerChime("P2");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 2;
+                        player.col = 2;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P2");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        return 1;
+                    }
+                    break;
+                case "btn-p1-down":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row == 5 && player.col != 2) {
+                        return 0;
+                    }
+                    //check red door at row 5, col 2 for Player 1
+                    if (player.row === 5 && player.col === 2) {
+                        AudioEngine.playPlayerChime("P1");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 3;
+                        player.col = 3;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P1");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    break;
+                case "btn-p2-down":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row == 5 && player.col != 2) {
+                        return 0;
+                    }
+                    //check red door at row 5, col 2 for Player 1
+                    if (player.row === 5 && player.col === 2) {
+                        AudioEngine.playPlayerChime("P2");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 3;
+                        player.col = 3;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P2");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    break;
+                case "btn-p1-left":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row != 3 && player.col == 0) {
+                        //checkCornerWin();
+                        return 0;
+                    }
+                    //check blue door at row 3, col 0 for Player 1
+                    if (player.row === 3 && player.col === 0) {
+                        AudioEngine.playPlayerChime("P1");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 3;
+                        player.col = 2;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P1");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    break;
+                case "btn-p2-left":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row != 3 && player.col == 0) {
+                        //checkCornerWin();
+                        return 0;
+                    }
+                    //check blue door at row 3, col 0 for Player 1
+                    if (player.row === 3 && player.col === 0) {
+                        AudioEngine.playPlayerChime("P2");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 3;
+                        player.col = 2;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P2");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    break;
+                case "btn-p1-right":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row != 3 && player.col == 5) {
+                        return 0;
+                    }
+                    //check purple door at row 3, col 5 for Player 1
+                    if (player.row === 3 && player.col === 5) {
+                        AudioEngine.playPlayerChime("P1");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 2;
+                        player.col = 3;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P1");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    break;
+                case "btn-p2-right":
+                    // ---Not allowed move actions, attempting to move outside of the grid ---
+                    if (player.row != 3 && player.col == 5) {
+                        return 0;
+                    }
+                    //check purple door at row 3, col 5 for Player 1
+                    if (player.row === 3 && player.col === 5) {
+                        AudioEngine.playPlayerChime("P2");
+                        enterDoor = true;
+                    }
+                    if (enterDoor === true) {
+                        player.row = 2;
+                        player.col = 3;
+
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        if (player.camouflaged == true) {
+                            p1CamouflageTurns++;
+                        }
+                        if (player.camouflaged == false) {
+                            p1CamouflageTurns = 0;
+                        }
+                        return 1;
+                    }
+                    // Stay inside grid bounds for all other cases
+                    if (enterDoor === false) {
+                        //playChime();
+                        AudioEngine.playPlayerChime("P2");
+                        player.row = player.row + dir[0];
+                        player.col = player.col + dir[1];
+
+                        // If a camouflaged player moves to a tile with a different color, they should no longer be camouflaged, and return to original color
+                        if (player.camouflaged) {
+                            if (grid[player.row][player.col] !== player.camouflagedColor) {
+                                // Different color → break camouflage
+                                player.camouflaged = false;
+                                player.camouflagedColor = null;
+                                player.symbol = "●";
+                            }
+                        }
+
+                        //check corner win
+                        checkCornerWin();
+                        return 1;
+                    }
+                    break;
+                default:
+                    return 0; // Invalid key for P1
             }
 
-        }
-      return 0; //if no conditions met, then move not successful
-    };
+    }
+
 
     // Robust interval-based glow that guarantees final color
     function glowOpponent(opponent, duration = 1000) {
@@ -829,17 +1139,7 @@
     })();
 
 
-    function switchTurns() {
-        if (!gameOver) {
-            // Switch turns after a move
-            if (currentPlayer === "P1") {
-                currentPlayer = "P2";
-            } else {
-                currentPlayer = "P1";
-            }
 
-        }
-    }
 
     function computerChooseMove() {
         //Step 1: Gather Info
@@ -870,29 +1170,29 @@
         let chosenMove;
         //Step 2: Decision table based on Distance States (16 theoretical, 8 meaningful)
         if (((Math.abs(players.P2.row - assumedP1Pos.row) + Math.abs(players.P2.col - assumedP1Pos.col)) <= 2) && (players.P1.camouflaged == false)) { //Dist P2P1 without doors taken into account
-            return "attack"; //Attack to win
+            return "btn-p2-attack"; //Attack to win
         }
 
         if (players.P2.row == 0 && players.P2.col == 1) { //player 2 is one step away from winning corner -Move to win
-            return "left";
+            return "btn-p2-left";
         }
 
         if (players.P2.row == 1 && players.P2.col == 0) { //player 2 is one step away from winning corner -Move to win
-            return "up";
+            return "btn-p2-up";
         }
 
         if (distP2P1 <= 2) { //It's a little bit of a patch for these situations. Dist P2P1 with doors taken into account. In these cases, don't move through the door
             if (players.P2.row == 3 && players.P2.col == 5) { //player 2 at purple door
-                return "left";
+                return "btn-p2-left";
             }
             if (players.P2.row == 0 && players.P2.col == 2) { //player 2 at orange door
-                return "left";
+                return "btn-p2-left";
             }
             if (players.P2.row == 5 && players.P2.col == 2) { //player 2 at red door
-                return "right";
+                return "btn-p2-right";
             }
             if (players.P2.row == 3 && players.P2.col == 0) { //player 2 at blue door
-                return "up";
+                return "btn-p2-up";
             }
         }
 
@@ -909,11 +1209,11 @@
             moveSelectedPosition = moveChoices[moveSelect];
             switch (moveSelectedPosition) {
                 case 0:
-                    return "attack";
+                    return "btn-p2-attack";
                 case 1:
-                    return "glow"; //you need more than one situation to glow. Otherwise Player 1 will know to attack after glow
+                    return "btn-p2-glow"; //you need more than one situation to glow. Otherwise Player 1 will know to attack after glow
                 case 2:
-                    return "camouflage";
+                    return "btn-p2-camouflage";
 
             }
         }
@@ -927,22 +1227,22 @@
             const possibleDirections = [{
                 row: -1,
                 col: 0,
-                key: "up"
+                key: "btn-p2-up"
             }, // up
             {
                 row: 1,
                 col: 0,
-                key: "down"
+                key: "btn-p2-down"
             }, // down
             {
                 row: 0,
                 col: -1,
-                key: "left"
+                key: "btn-p2-left"
             }, // left
             {
                 row: 0,
                 col: 1,
-                key: "right"
+                key: "btn-p2-right"
             } // right
             ];
             while (possibleChosenKey == null && count < 20) {
@@ -968,7 +1268,7 @@
             moveSelectedPosition = moveChoices[moveSelect];
             switch (moveSelectedPosition) {
                 case 0:
-                    return "camouflage";
+                    return "btn-p2-camouflage";
                 case 1:
                     return possibleChosenKey;
 
@@ -981,9 +1281,9 @@
              //Camouflage in this situation, later add glow option?
             randomNumber = Math.random();
              if (randomNumber < 0.7) {
-                return "camouflage";
+                return "btn-p2-camouflage";
              } else {
-               return "glow";
+               return "btn-p2-glow";
             }
         }
             
@@ -1010,22 +1310,22 @@
         const directions = [{
                 row: -1,
                 col: 0,
-                key: "up"
+                key: "btn-p2-up"
             }, // up
             {
                 row: 1,
                 col: 0,
-                key: "down"
+                key: "btn-p2-down"
             }, // down
             {
                 row: 0,
                 col: -1,
-                key: "left"
+                key: "btn-p2-left"
             }, // left
             {
                 row: 0,
                 col: 1,
-                key: "right"
+                key: "btn-p2-right"
             } // right
         ];
 
@@ -1239,32 +1539,32 @@
         switch (target) {
             case normalDist:
                 if (rowDiff == 0 && colDiff > 0) { //Target is due East of P2
-                    return "right" //P2 moves East
+                    return "btn-p2-right" //P2 moves East
                 }
                 if (rowDiff == 0 && colDiff < 0) { //Target is due West of P2
-                    return "left" //P2 moves West
+                    return "btn-p2-left" //P2 moves West
                 }
                 if (rowDiff < 0 && colDiff == 0) { //Target is due North of P2
-                    return "up" //P2 moves North
+                    return "btn-p2-up" //P2 moves North
                 }
                 if (rowDiff > 0 && colDiff == 0) { //Target is due South of P2
-                    return "down" //P2 moves South
+                    return "btn-p2-down" //P2 moves South
                 }
                 if (rowDiff < 0 && colDiff > 0) { //Target is North East of P2
                     //In most cases, probably want to move east. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "up" //P2 moves North
+                        return "btn-p2-up" //P2 moves North
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
                 if (rowDiff < 0 && colDiff < 0) { //Target is North West of P2
                     //In most cases, probably want to move North. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "up"; //P2 moves North
+                        return "btn-p2-up"; //P2 moves North
                     }
 
                 }
@@ -1272,9 +1572,9 @@
                 if (rowDiff > 0 && colDiff < 0) { //Target is South West of P2
                     //In most cases, probably want to move South. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "down"; //P2 moves South
+                        return "btn-p2-down"; //P2 moves South
                     }
 
                 }
@@ -1282,9 +1582,9 @@
                 if (rowDiff > 0 && colDiff > 0) { //Target is South East of P2
                     //In most cases, probably want to move East. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "down" //P2 moves South
+                        return "btn-p2-down" //P2 moves South
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
@@ -1292,36 +1592,36 @@
                 break;
             case viaP2ToOrangeDoor:
                 if (a.col == 2 && a.row == 0) { //close to winning corner, move toward winning corner
-                    return "left";
+                    return "btn-p2-left";
                 }
                 //Otherwise, behave like normal distance case
                 if (rowDiff == 0 && colDiff > 0) { //Target is due East of P2
-                    return "right" //P2 moves East
+                    return "btn-p2-right" //P2 moves East
                 }
                 if (rowDiff == 0 && colDiff < 0) { //Target is due West of P2
-                    return "left" //P2 moves West
+                    return "btn-p2-left" //P2 moves West
                 }
                 if (rowDiff < 0 && colDiff == 0) { //Target is due North of P2
-                    return "up" //P2 moves North
+                    return "btn-p2-up" //P2 moves North
                 }
                 if (rowDiff > 0 && colDiff == 0) { //Target is due South of P2
-                    return "down" //P2 moves South
+                    return "btn-p2-down" //P2 moves South
                 }
                 if (rowDiff < 0 && colDiff > 0) { //Target is North East of P2
                     //In most cases, probably want to move east. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "up" //P2 moves North
+                        return "btn-p2-up" //P2 moves North
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
                 if (rowDiff < 0 && colDiff < 0) { //Target is North West of P2
                     //In most cases, probably want to move North. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "up"; //P2 moves North
+                        return "btn-p2-up"; //P2 moves North
                     }
 
                 }
@@ -1329,9 +1629,9 @@
                 if (rowDiff > 0 && colDiff < 0) { //Target is South West of P2
                     //In most cases, probably want to move South. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "down"; //P2 moves South
+                        return "btn-p2-down"; //P2 moves South
                     }
 
                 }
@@ -1339,9 +1639,9 @@
                 if (rowDiff > 0 && colDiff > 0) { //Target is South East of P2
                     //In most cases, probably want to move East. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "down" //P2 moves South
+                        return "btn-p2-down" //P2 moves South
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
@@ -1349,42 +1649,42 @@
                 break;
             case viaP2ToPurpleDoor:
                 if (a.col == 5 && a.row > 3) {
-                    return "up"; //move from lower right corner towards purple door
+                    return "btn-p2-up"; //move from lower right corner towards purple door
                 }
                 if ((a.col == 5 && a.row == 3) && (b.row == 2 && b.col == 2)) {
-                    return "camouflage"; //go through the purple door
+                    return "btn-p2-camouflage"; //go through the purple door
                 }
                 if ((a.col == 5 && a.row == 3) && (b.row != 2 || b.col != 2)) {
-                    return "right"; //go through the purple door
+                    return "btn-p2-right"; //go through the purple door
                 }
                 //Otherwise, behave like normal distance case
                 if (rowDiff == 0 && colDiff > 0) { //Target is due East of P2
-                    return "right" //P2 moves East
+                    return "btn-p2-right" //P2 moves East
                 }
                 if (rowDiff == 0 && colDiff < 0) { //Target is due West of P2
-                    return "left" //P2 moves West
+                    return "btn-p2-left" //P2 moves West
                 }
                 if (rowDiff < 0 && colDiff == 0) { //Target is due North of P2
-                    return "up" //P2 moves North
+                    return "btn-p2-up" //P2 moves North
                 }
                 if (rowDiff > 0 && colDiff == 0) { //Target is due South of P2
-                    return "down" //P2 moves South
+                    return "btn-p2-down" //P2 moves South
                 }
                 if (rowDiff < 0 && colDiff > 0) { //Target is North East of P2
                     //In most cases, probably want to move east. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "up" //P2 moves North
+                        return "btn-p2-up" //P2 moves North
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
                 if (rowDiff < 0 && colDiff < 0) { //Target is North West of P2
                     //In most cases, probably want to move North. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "up"; //P2 moves North
+                        return "btn-p2-up"; //P2 moves North
                     }
 
                 }
@@ -1392,9 +1692,9 @@
                 if (rowDiff > 0 && colDiff < 0) { //Target is South West of P2
                     //In most cases, probably want to move South. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "down"; //P2 moves South
+                        return "btn-p2-down"; //P2 moves South
                     }
 
                 }
@@ -1402,9 +1702,9 @@
                 if (rowDiff > 0 && colDiff > 0) { //Target is South East of P2
                     //In most cases, probably want to move East. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "down" //P2 moves South
+                        return "btn-p2-down" //P2 moves South
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
@@ -1412,39 +1712,39 @@
                 break;
             case viaP2ToRedDoor:
                 if (a.col > 2 && a.row == 5) {
-                    return "left"; //move from lower right corner towards red door
+                    return "btn-p2-left"; //move from lower right corner towards red door
                 }
                 if (a.col == 2 && a.row == 5) {
-                    return "down"; //go through the red door
+                    return "btn-p2-down"; //go through the red door
                 }
                 //Otherwise, behave like normal distance case
                 if (rowDiff == 0 && colDiff > 0) { //Target is due East of P2
-                    return "right" //P2 moves East
+                    return "btn-p2-right" //P2 moves East
                 }
                 if (rowDiff == 0 && colDiff < 0) { //Target is due West of P2
-                    return "left" //P2 moves West
+                    return "btn-p2-left" //P2 moves West
                 }
                 if (rowDiff < 0 && colDiff == 0) { //Target is due North of P2
-                    return "up" //P2 moves North
+                    return "btn-p2-up" //P2 moves North
                 }
                 if (rowDiff > 0 && colDiff == 0) { //Target is due South of P2
-                    return "down" //P2 moves South
+                    return "btn-p2-down" //P2 moves South
                 }
                 if (rowDiff < 0 && colDiff > 0) { //Target is North East of P2
                     //In most cases, probably want to move east. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "up" //P2 moves North
+                        return "btn-p2-up" //P2 moves North
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
                 if (rowDiff < 0 && colDiff < 0) { //Target is North West of P2
                     //In most cases, probably want to move North. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "up"; //P2 moves North
+                        return "btn-p2-up"; //P2 moves North
                     }
 
                 }
@@ -1452,9 +1752,9 @@
                 if (rowDiff > 0 && colDiff < 0) { //Target is South West of P2
                     //In most cases, probably want to move South. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "down"; //P2 moves South
+                        return "btn-p2-down"; //P2 moves South
                     }
 
                 }
@@ -1462,45 +1762,45 @@
                 if (rowDiff > 0 && colDiff > 0) { //Target is South East of P2
                     //In most cases, probably want to move East. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "down" //P2 moves South
+                        return "btn-p2-down" //P2 moves South
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
                 break;
             case viaP2ToBlueDoor:
                 if (a.col == 0 && a.row == 3) { //close to winning corner, move toward winning corner
-                    return "up";
+                    return "btn-p2-up";
                 }
                 //Otherwise, behave like normal distance case
                 if (rowDiff == 0 && colDiff > 0) { //Target is due East of P2
-                    return "right" //P2 moves East
+                    return "btn-p2-right" //P2 moves East
                 }
                 if (rowDiff == 0 && colDiff < 0) { //Target is due West of P2
-                    return "left" //P2 moves West
+                    return "btn-p2-left" //P2 moves West
                 }
                 if (rowDiff < 0 && colDiff == 0) { //Target is due North of P2
-                    return "up" //P2 moves North
+                    return "btn-p2-up" //P2 moves North
                 }
                 if (rowDiff > 0 && colDiff == 0) { //Target is due South of P2
-                    return "down" //P2 moves South
+                    return "btn-p2-down" //P2 moves South
                 }
                 if (rowDiff < 0 && colDiff > 0) { //Target is North East of P2
                     //In most cases, probably want to move east. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "up" //P2 moves North
+                        return "btn-p2-up" //P2 moves North
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
                 if (rowDiff < 0 && colDiff < 0) { //Target is North West of P2
                     //In most cases, probably want to move North. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "up"; //P2 moves North
+                        return "btn-p2-up"; //P2 moves North
                     }
 
                 }
@@ -1508,9 +1808,9 @@
                 if (rowDiff > 0 && colDiff < 0) { //Target is South West of P2
                     //In most cases, probably want to move South. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "left" //P2 moves West
+                        return "btn-p2-left" //P2 moves West
                     } else {
-                        return "down"; //P2 moves South
+                        return "btn-p2-down"; //P2 moves South
                     }
 
                 }
@@ -1518,9 +1818,9 @@
                 if (rowDiff > 0 && colDiff > 0) { //Target is South East of P2
                     //In most cases, probably want to move East. Not sure though...
                     if (Math.random() < 0.25) {
-                        return "down" //P2 moves South
+                        return "btn-p2-down" //P2 moves South
                     } else {
-                        return "right"; //P2 moves East
+                        return "btn-p2-right"; //P2 moves East
                     }
 
                 }
@@ -1533,46 +1833,60 @@
 
 
     function handleButtonInput(actionKey, btnEl) {
-        let isProcessActionKeySuccessful = 0;
-        if (gameOver) return; // ignore actionKeys if game ended
-        if (btnEl.disabled) return;  // extra safety
-        isProcessActionKeySuccessful = processActionKey(actionKey);
-        //console.log("isProcessActionKeySuccessful",isProcessActionKeySuccessful);
-        // Visual feedback
+        if (gameOver) return;
+        if (btnEl.disabled) return;
+
         btnEl.classList.add("pressed");
         setTimeout(() => btnEl.classList.remove("pressed"), 150);
-        if (isProcessActionKeySuccessful == 0) return;
-        // 🔒 Disable immediately after valid move
-        setGameButtonsDisabled(true);
-        if (isOnePlayer == true && isProcessActionKeySuccessful == 1) {
+
+        const success = processActionKey(actionKey);
+        if (success !== 1) return;
+
+        if (isOnePlayer) {
+            // Disable P1 controls while AI thinks
+            setP1ButtonsDisabled(true);
+
             setTimeout(() => {
-
                 let aiKey = computerChooseMove();
-                isProcessActionKeySuccessful = processActionKey(aiKey);
-                //if (gameover) setGameButtonsDisabled(true);
-                // Step 4: Did Player 2 win?
+                processActionKey(aiKey);
 
-                if (gameOver) return;
-                setGameButtonsDisabled(false);
+                if (!gameOver) {
+                    // Re-enable ONLY P1 controls (P2 stays locked out)
+                    setP1ButtonsDisabled(false);
 
+                    // Keep P1 glow button disabled if out of glows
+                    if (players.P1.glows <= 0) {
+                        const p1GlowBtn = document.getElementById('btn-p1-glow');
+                        if (p1GlowBtn) p1GlowBtn.disabled = true;
+                    }
+                }
             }, 500);
-        }
-        if (isOnePlayer == false){
-         setGameButtonsDisabled(true);
-         setTimeout(() => {
-          if (!gameOver) setGameButtonsDisabled(false);
-         }, 500);
+        } else {
+            // Two-Player Mode: Switch turn states
+            if (actionKey.startsWith("btn-p1-")) {
+                setP1ButtonsDisabled(true);
+                setP2ButtonsDisabled(false);
 
+                if (players.P2.glows <= 0) {
+                    const p2GlowBtn = document.getElementById('btn-p2-glow');
+                    if (p2GlowBtn) p2GlowBtn.disabled = true;
+                }
+            } else if (actionKey.startsWith("btn-p2-")) {
+                setP1ButtonsDisabled(false);
+                setP2ButtonsDisabled(true);
+
+                if (players.P1.glows <= 0) {
+                    const p1GlowBtn = document.getElementById('btn-p1-glow');
+                    if (p1GlowBtn) p1GlowBtn.disabled = true;
+                }
+            }
         }
     }
-
     function processActionKey(actionKey) {
         if (gameOver) return;
         let isMoveSuccessful = 0;
+
         if (currentPlayer === "P1") {
-            turnIndicator.textContent = "Player 1's Turn";
-            turnIndicator.style.color = "lightgray"; // Player 1 cue
-            turnIndicator.style.backgroundColor = "black";
             //Player 1 acts
             isMoveSuccessful = processPlayerMove(actionKey);
             if (isMoveSuccessful == 0) return 0;
@@ -1580,29 +1894,74 @@
 
             //console.log("p1CamouflageTurns",p1CamouflageTurns);
         } else {
-            turnIndicator.textContent = "Player 2's Turn";
-            turnIndicator.style.color = "lightgray"; // Player 2 cue
-            turnIndicator.style.backgroundColor = "blue";
             isMoveSuccessful = processPlayerMove(actionKey);
             if (isMoveSuccessful == 0) return 0;
             //switchTurns();
         }
 
         switchTurns();
-        if (!gameOver) {
-            if (isOnePlayer == false) {
-                if ((turnTracker % 2) == 0) {
-                    showTurnMessage(`Pass the phone to Player 2.`);
-                } else {
-                    showTurnMessage(`Pass the phone to Player 1.`);
-                }
-                turnTracker = turnTracker + 1;
-            }
-
-            renderGrid();
-        }
+        renderGrid();
         return 1;
     }
+    // Updated switchTurns function to update UI state
+    function switchTurns() {
+        if (!gameOver) {
+            currentPlayer = (currentPlayer === "P1") ? "P2" : "P1";
+            updateButtonStates();
+        }
+    }
+
+    function updateGlowButton(playerKey) {
+        if (playerKey === "P1") {
+            const p1GlowBtn = document.getElementById('btn-p1-glow');
+            if (p1GlowBtn) {
+                const p1Remaining = Math.max(0, players.P1.glows);
+                p1GlowBtn.textContent = '💡'.repeat(p1Remaining);
+                if (p1Remaining <= 0) {
+                    p1GlowBtn.disabled = true;
+                }
+            }
+        } else if (playerKey === "P2") {
+            const p2GlowBtn = document.getElementById('btn-p2-glow');
+            if (p2GlowBtn) {
+                const p2Remaining = Math.max(0, players.P2.glows);
+                p2GlowBtn.textContent = '💡'.repeat(p2Remaining);
+                if (p2Remaining <= 0) {
+                    p2GlowBtn.disabled = true;
+                }
+            }
+        }
+    }
+    // Function to enable/disable UI control groups based on turn state
+    function updateButtonStates() {
+        // Select containers or button groups for P1 and P2
+        const p1Buttons = document.querySelectorAll(".p1-control-btn");
+        const p2Buttons = document.querySelectorAll(".p2-control-btn");
+
+        if (gameOver) {
+            // Disable both control sets if game is over
+            p1Buttons.forEach(btn => btn.disabled = true);
+            p2Buttons.forEach(btn => btn.disabled = true);
+            return;
+        }
+
+        if (currentPlayer === "P1") {
+            p1Buttons.forEach(btn => btn.disabled = false);
+            p2Buttons.forEach(btn => btn.disabled = true);
+        } else {
+            p1Buttons.forEach(btn => btn.disabled = true);
+            p2Buttons.forEach(btn => btn.disabled = false);
+        }
+    }
+
+
+
+
+    // --- Query all movement and action buttons across both player panels ---
+    const gameButtons = document.querySelectorAll(
+        "#btn-p1-up, #btn-p1-down, #btn-p1-left, #btn-p1-right, #btn-p1-camouflage, #btn-p1-glow, #btn-p1-attack, " +
+        "#btn-p2-up, #btn-p2-down, #btn-p2-left, #btn-p2-right, #btn-p2-camouflage, #btn-p2-glow, #btn-p2-attack"
+    );
 
     function setGameButtonsDisabled(disabled) {
         gameButtons.forEach(btn => {
@@ -1610,19 +1969,46 @@
         });
     }
 
-    document.getElementById("btn-up").addEventListener("click", (e) => handleButtonInput("up", e.target));
-    document.getElementById("btn-down").addEventListener("click", (e) => handleButtonInput("down", e.target));
-    document.getElementById("btn-left").addEventListener("click", (e) => handleButtonInput("left", e.target));
-    document.getElementById("btn-right").addEventListener("click", (e) => handleButtonInput("right", e.target));
-
-    // Action buttons
-    document.getElementById("btn-camouflage").addEventListener("click", (e) => handleButtonInput("camouflage", e.target));
-    document.getElementById("btn-glow").addEventListener("click", (e) => handleButtonInput("glow", e.target));
-    document.getElementById("btn-attack").addEventListener("click", (e) => handleButtonInput("attack", e.target));
-
-    const gameButtons = document.querySelectorAll(
-        "#btn-up, #btn-down, #btn-left, #btn-right, #btn-camouflage, #btn-glow, #btn-attack"
+    // Select P1 and P2 button nodes separately
+    const p1Buttons = document.querySelectorAll(
+        "#btn-p1-up, #btn-p1-down, #btn-p1-left, #btn-p1-right, #btn-p1-camouflage, #btn-p1-glow, #btn-p1-attack"
     );
+
+    const p2Buttons = document.querySelectorAll(
+        "#btn-p2-up, #btn-p2-down, #btn-p2-left, #btn-p2-right, #btn-p2-camouflage, #btn-p2-glow, #btn-p2-attack"
+    );
+
+    // Toggle Player 1 buttons
+    function setP1ButtonsDisabled(disabled) {
+        p1Buttons.forEach(btn => {
+            btn.disabled = disabled;
+        });
+    }
+
+    // Toggle Player 2 buttons
+    function setP2ButtonsDisabled(disabled) {
+        p2Buttons.forEach(btn => {
+            btn.disabled = disabled;
+        });
+    }
+
+    // Player 1
+    document.getElementById("btn-p1-up").addEventListener("click", (e) => handleButtonInput("btn-p1-up", e.currentTarget));
+    document.getElementById("btn-p1-down").addEventListener("click", (e) => handleButtonInput("btn-p1-down", e.currentTarget));
+    document.getElementById("btn-p1-left").addEventListener("click", (e) => handleButtonInput("btn-p1-left", e.currentTarget));
+    document.getElementById("btn-p1-right").addEventListener("click", (e) => handleButtonInput("btn-p1-right", e.currentTarget));
+    document.getElementById("btn-p1-camouflage").addEventListener("click", (e) => handleButtonInput("btn-p1-camouflage", e.currentTarget));
+    document.getElementById("btn-p1-glow").addEventListener("click", (e) => handleButtonInput("btn-p1-glow", e.currentTarget));
+    document.getElementById("btn-p1-attack").addEventListener("click", (e) => handleButtonInput("btn-p1-attack", e.currentTarget));
+
+    // Player 2
+    document.getElementById("btn-p2-up").addEventListener("click", (e) => handleButtonInput("btn-p2-up", e.currentTarget));
+    document.getElementById("btn-p2-down").addEventListener("click", (e) => handleButtonInput("btn-p2-down", e.currentTarget));
+    document.getElementById("btn-p2-left").addEventListener("click", (e) => handleButtonInput("btn-p2-left", e.currentTarget));
+    document.getElementById("btn-p2-right").addEventListener("click", (e) => handleButtonInput("btn-p2-right", e.currentTarget));
+    document.getElementById("btn-p2-camouflage").addEventListener("click", (e) => handleButtonInput("btn-p2-camouflage", e.currentTarget));
+    document.getElementById("btn-p2-glow").addEventListener("click", (e) => handleButtonInput("btn-p2-glow", e.currentTarget));
+    document.getElementById("btn-p2-attack").addEventListener("click", (e) => handleButtonInput("btn-p2-attack", e.currentTarget));
 
     document.getElementById("begin-btn-2Player").addEventListener("click", () => {
         document.getElementById("overlay").style.display = "none";
@@ -1633,6 +2019,9 @@
         AudioEngine.stopJingle();
         AudioEngine.startJingle();
         renderGrid();
+        setP1ButtonsDisabled(false);
+        setP2ButtonsDisabled(true);
+
     });
 
 
@@ -1645,5 +2034,14 @@
         AudioEngine.stopJingle();
         AudioEngine.startJingle();
         renderGrid();
+        if (isOnePlayer) {
+            // 🔒 Lock Player 2's side completely in 1-player mode
+            setP1ButtonsDisabled(false);
+            setP2ButtonsDisabled(true);
+        } else {
+            // 2-Player mode starts with P1 active and P2 disabled
+            setP1ButtonsDisabled(false);
+            setP2ButtonsDisabled(true);
+        }
     });
     document.getElementById("reset-btn").addEventListener("click", resetGame);
