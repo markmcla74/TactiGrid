@@ -147,7 +147,6 @@ color: white;
 .p1, .p2 {
   font-size: 4em;
 }
-
 /* Fullscreen overlay */
 #overlay {
 position: fixed;
@@ -169,7 +168,10 @@ overflow-y: auto;
 }
 
 .overlay-content h1 {
-  margin: 0 0 20px;
+  margin-top: 10px; /* 🎯 Shifted down 10px for top clearance */
+  margin-right: 0;
+  margin-bottom: 20px;
+  margin-left: 0;
   font-size: 2rem;
 }
 
@@ -184,7 +186,6 @@ overflow-y: auto;
 .overlay-content ul li {
   margin-bottom: 0.6em;
 }
-
 #begin-btn,
 #begin-btn-1Player,
 #begin-btn-2Player {
@@ -211,7 +212,7 @@ background: #005fcc;
   align-items: center;
   width: var(--grid-width, 420px);
   margin: 2px auto 0 auto; /* 👈 Minimal gap below the grid */
-  padding-bottom: 5px;
+  padding-bottom: 10px;
 }
 
 .controls-section.dpad {
@@ -231,8 +232,8 @@ background: #005fcc;
 .btn-glow,
 .btn-camouflage,
 .btn-attack {
-  width: 60px;
-  height: 60px;
+  width: 55px;
+  height: 55px;
   padding: 0;
   display: inline-flex;
   align-items: center;
