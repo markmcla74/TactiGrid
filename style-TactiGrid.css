@@ -226,38 +226,38 @@ background: #005fcc;
   justify-content: center;
   gap: 10px;
 }
-/* Shared button rule (+10% increase) */
+/* Shared button rule (Mid-dark gray for optimal emoji visibility) */
 .dpad button,
 .btn-glow,
 .btn-camouflage,
 .btn-attack {
-  width: 44px;
-  height: 44px;
+  width: 60px;
+  height: 60px;
   padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.18rem;
-  background-color: #444;
+  font-size: 1.5rem;
+  background-color: #555; /* 🎨 Tuned right between #444 and #6e6e6e */
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  box-shadow: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   outline: none;
   transform: none;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  transition: opacity 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
 }
 /* Override font size specifically for the glow button to prevent line wrap */
 .btn-glow {
-  font-size: 1.18rem !important; /* Drops size so both 💡💡 fit horizontally */
+  font-size: 1.5rem !important; /* Drops size so both 💡💡 fit horizontally */
   white-space: nowrap !important; /* Strictly forbids multi-line wrapping */
   letter-spacing: -1px; /* Brings the lightbulbs close together */
 }
 /* Extra sizing boost for single-emoji action buttons */
 .btn-camouflage,
 .btn-attack {
-  font-size: 1.84rem !important; /* 🚀 Scales up 🔅 and 🎯 to fit the 44px container */
+  font-size: 2.5rem !important; /* 🚀 Scales up 🔅 and 🎯 to fit the 44px container */
 }
 /* Force horizontal alignment for multi-emoji Glow button */
 /* Force Glow button into a strict horizontal row container */
@@ -275,13 +275,15 @@ background: #005fcc;
 .btn-glow:disabled,
 .btn-camouflage:disabled,
 .btn-attack:disabled {
+  background-color: #888 !important; /* Faded state against #555 base */
   opacity: 0.35 !important;
   cursor: not-allowed !important;
   filter: grayscale(100%) !important;
-  pointer-events: none !important; /* 🔒 Prevents touch/click events entirely */
+  pointer-events: none !important;
+  box-shadow: none !important;
 }
 /* Rotate Player 2's glow button 180 degrees for opposite player orientation */
-#btn-p2-glow {
+#btn-p2-glow,#btn-p2-camouflage {
 transform: rotate(180deg);
 }
 /* Lower-Left Reset Button */
