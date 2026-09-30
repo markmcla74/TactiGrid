@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tactigrid-v2';
+const CACHE_NAME = 'tactigrid-v4';
 const ASSETS = [
     './',
 './index.html',
