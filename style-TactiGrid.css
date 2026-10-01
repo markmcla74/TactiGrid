@@ -26,7 +26,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center; /* 👈 Pulled elements together */
-  gap: 4px; /* 👈 Controls distance between top controls, grid, and bottom controls */
+  gap: 25px; /* 👈 Controls distance between top controls, grid, and bottom controls */
   max-width: 600px; /* desktop/tablet */
   margin: 0 auto;
   padding: 8px;
