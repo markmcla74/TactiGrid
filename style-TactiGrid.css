@@ -26,7 +26,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px; /* 🚀 Tripled from 4px to 12px for expanded layout spacing */
+  gap: 16px; /* 🚀 Expanded parent container gap for a roomier mobile feel */
   max-width: 600px; /* desktop/tablet */
   margin: 0 auto;
   padding: 8px;
@@ -71,7 +71,7 @@ ul {
   justify-content: center;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 6px; /* 🚀 Tripled from 2px to 6px above the grid */
+  margin-bottom: 12px; /* 🎯 Direct 12px spacing above the grid */
   margin-top: 0;
 }
 
@@ -212,7 +212,7 @@ background: #005fcc;
   flex-direction: column;
   align-items: center;
   width: var(--grid-width, 420px);
-  margin: 6px auto 0 auto; /* 🚀 Tripled top margin from 2px to 6px below the grid */
+  margin: 12px auto 0 auto; /* 🎯 Direct 12px spacing below the grid */
   padding-bottom: 10px;
 }
 
