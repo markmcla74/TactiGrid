@@ -25,8 +25,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 16px; /* 🚀 Expanded parent container gap for a roomier mobile feel */
+  justify-content: center; /* 👈 Pulled elements together */
+  gap: 4px; /* 👈 Controls distance between top controls, grid, and bottom controls */
   max-width: 600px; /* desktop/tablet */
   margin: 0 auto;
   padding: 8px;
@@ -71,7 +71,7 @@ ul {
   justify-content: center;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 12px; /* 🎯 Direct 12px spacing above the grid */
+  margin-bottom: 2px; /* 👈 Minimal gap above the grid */
   margin-top: 0;
 }
 
@@ -212,7 +212,7 @@ background: #005fcc;
   flex-direction: column;
   align-items: center;
   width: var(--grid-width, 420px);
-  margin: 12px auto 0 auto; /* 🎯 Direct 12px spacing below the grid */
+  margin: 2px auto 0 auto; /* 👈 Minimal gap below the grid */
   padding-bottom: 10px;
 }
 
