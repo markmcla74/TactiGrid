@@ -1388,123 +1388,19 @@
 
 
     function getAssumedP1Pos() {
+        //Originally made more complicated with a "zone of uncertainty". But I think
+        //this simplified approach of just setting assumedP1Pos = lastKnownP1Pos is better. Not sure...
+        //
         //we will work with 5 different cell locations: center, up, down, right, and left.
         //Similar to a clock, center = 0, up = 12, down = 6, right = 3, left = 9
+
         lastKnownP1Pos = {
             row: players.P1.row,
             col: players.P1.col
         };
-        if (p1CamouflageTurns < 2) { //should be 2, but for testing, set to 0
-            // Trust the actual position
-            // lastKnownP1Pos = { row: players.P1.row, col: players.P1.col };
-            //console.log("p1CamouflageTurns", p1CamouflageTurns);
-            assumedP1Pos = lastKnownP1Pos;
-            return;
-        } else {
-
-            let upRow = null;
-            let upCol = null;
-            let downRow = null;
-            let downCol = null;
-            let leftRow = null;
-            let leftCol = null;
-            let rightRow = null;
-            let rightCol = null;
-            let noMovementRow = null;
-            let noMovementCol = null;
-            let selectedPosition = null;
-
-
-            let baseColor = grid[lastKnownP1Pos.row][lastKnownP1Pos.col];
-            let neighbors = [];
-            //NO MOVEMENT
-            neighbors.push(0);
-            neighbors.push(0); //weigh the assumption that no movement takes place by pushing 0 into the neighbors array twice
-            noMovementRow = lastKnownP1Pos.row;
-            noMovementCol = lastKnownP1Pos.col;
-
-            //UP
-            if (lastKnownP1Pos.row == 0 && lastKnownP1Pos.col == 2 && grid[2][2] === baseColor) {
-                neighbors.push(12); //take into account top orange door
-                upRow = 2;
-                upCol = 2;
-
-            } else if (lastKnownP1Pos.row != 0 && grid[lastKnownP1Pos.row - 1][lastKnownP1Pos.col] === baseColor) {
-                neighbors.push(12);
-                upRow = lastKnownP1Pos.row - 1;
-                upCol = lastKnownP1Pos.col;
-            }
-
-            //DOWN
-            if (lastKnownP1Pos.row == 5 && lastKnownP1Pos.col == 2 && grid[3][3] === baseColor) {
-                neighbors.push(6); //take into account bottom red door
-                downRow = 3;
-                downCol = 3;
-
-            } else if (lastKnownP1Pos.row != 5 && grid[lastKnownP1Pos.row + 1][lastKnownP1Pos.col] === baseColor) {
-                neighbors.push(6);
-                downRow = lastKnownP1Pos.row + 1;
-                downCol = lastKnownP1Pos.col;
-            }
-
-            //LEFT
-            if (lastKnownP1Pos.row == 3 && lastKnownP1Pos.col == 0 && grid[3][2] === baseColor) {
-                neighbors.push(9); //take into account left blue door
-                leftRow = 3;
-                leftCol = 2;
-
-            } else if (lastKnownP1Pos.col != 0 && grid[lastKnownP1Pos.row][lastKnownP1Pos.col - 1] === baseColor) {
-                neighbors.push(9);
-                leftRow = lastKnownP1Pos.row;
-                leftCol = lastKnownP1Pos.col - 1;
-            }
-
-            //RIGHT
-            if (lastKnownP1Pos.row == 3 && lastKnownP1Pos.col == 5 && grid[2][3] === baseColor) {
-                neighbors.push(3); //take into account right purple door
-                rightRow = 2;
-                rightCol = 3;
-
-            } else if (lastKnownP1Pos.col != 5 && grid[lastKnownP1Pos.row][lastKnownP1Pos.col + 1] === baseColor) {
-                neighbors.push(3);
-                rightRow = lastKnownP1Pos.row;
-                rightCol = lastKnownP1Pos.col + 1;
-            }
-
-
-            let select = Math.floor(Math.random() * neighbors.length);
-            selectedPosition = neighbors[select];
-            //console.log("selected position", selectedPosition);
-            //console.log("Final neighbor list:", neighbors);
-            //console.log("basecolor", baseColor);
-
-            switch (selectedPosition) {
-                case 0:
-                    assumedP1Pos.row = noMovementRow;
-                    assumedP1Pos.col = noMovementCol;
-                    break;
-                case 12:
-                    assumedP1Pos.row = upRow;
-                    assumedP1Pos.col = upCol;
-                    break;
-                case 6:
-                    assumedP1Pos.row = downRow;
-                    assumedP1Pos.col = downCol;
-                    break;
-                case 9:
-                    assumedP1Pos.row = leftRow;
-                    assumedP1Pos.col = leftCol;
-                    break;
-                case 3:
-                    assumedP1Pos.row = rightRow;
-                    assumedP1Pos.col = rightCol;
-                    break;
-
-            }
-
-        }
-
+        assumedP1Pos = lastKnownP1Pos;
     }
+
 
     function moveToward(a, b) {
         //a = P2, b = target
