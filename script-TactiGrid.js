@@ -1146,206 +1146,115 @@
     })();
 
 
-
-
     function computerChooseMove() {
-        //Step 1: Gather Info
+        // Step 1: Gather Info & Update Position Tracking
         getAssumedP1Pos();
-        //console.log("lastKnownP1Pos",lastKnownP1Pos);
-        //console.log("assumedP1Pos",assumedP1Pos);
-        let P2Corner = {
-            row: 5,
-            col: 5
-        };
-        let P1Corner = {
-            row: 0,
-            col: 0
-        };
-        //the getDistanceFunction takes the doors into account
-        //note that distances are NOT symmetric, meaning that dist(P1,P2) != dist(P2,P1)
-        //because the doors are one-way.
-        let distP1ToP2Corner = getDistance(assumedP1Pos, P2Corner);
+
+        const P2Corner = { row: 5, col: 5 };
+        const P1Corner = { row: 0, col: 0 };
+
+        // Use actual/assumed P1 position consistently
+        let targetPos = assumedP1Pos;
+
+        // Distance metrics (accounting for one-way doors)
+        let distP1ToP2Corner = getDistance(targetPos, P2Corner);
         let distP2ToP1Corner = getDistance(players.P2, P1Corner);
-        let distP1P2 = getDistance(assumedP1Pos, players.P2);
-        let distP2P1 = getDistance(players.P2, assumedP1Pos); //distance from P2 to P1
-        //console.log("distP1ToP2Corner", distP1ToP2Corner);
-        //console.log("distP2ToP1Corner", distP2ToP1Corner);
-        //console.log("distP1P2", distP1P2);
-        //console.log("distP2P1", distP2P1);
+        let distP2P1 = getDistance(players.P2, targetPos);
 
-        let target;
-        let chosenMove;
-        //Step 2: Decision table based on Distance States (16 theoretical, 8 meaningful)
-        if (((Math.abs(players.P2.row - assumedP1Pos.row) + Math.abs(players.P2.col - assumedP1Pos.col)) <= 2) && (players.P1.camouflaged == false)) { //Dist P2P1 without doors taken into account
-            return "btn-p2-attack"; //Attack to win
+        // Step 2: Immediate Winning / Attack Checks
+        // Direct Manhattan distance for adjacent attack check (no doors)
+        let directDistP2P1 = Math.abs(players.P2.row - targetPos.row) + Math.abs(players.P2.col - targetPos.col);
+
+        if (directDistP2P1 <= 2 && !players.P1.camouflaged) {
+            return "btn-p2-attack"; // Attack to win
         }
 
-        if (players.P2.row == 0 && players.P2.col == 1) { //player 2 is one step away from winning corner -Move to win
-            return "btn-p2-left";
+        // Winning corner proximity checks for P2
+        if (players.P2.row === 0 && players.P2.col === 1) { return "btn-p2-left"; }
+        if (players.P2.row === 1 && players.P2.col === 0) { return "btn-p2-up"; }
+
+        // Door proximity patch: prevent P2 from blindly walking into doors when too close
+        if (distP2P1 <= 2) {
+            if (players.P2.row === 3 && players.P2.col === 5) { return "btn-p2-left"; }
+            if (players.P2.row === 0 && players.P2.col === 2) { return "btn-p2-left"; }
+            if (players.P2.row === 5 && players.P2.col === 2) { return "btn-p2-right"; }
+            if (players.P2.row === 3 && players.P2.col === 0) { return "btn-p2-up"; }
         }
 
-        if (players.P2.row == 1 && players.P2.col == 0) { //player 2 is one step away from winning corner -Move to win
-            return "btn-p2-up";
-        }
+        // Step 3: Camouflage Interaction States
+        if (directDistP2P1 <= 2 && players.P1.camouflaged) {
+            let rand = Math.random();
 
-        if (distP2P1 <= 2) { //It's a little bit of a patch for these situations. Dist P2P1 with doors taken into account. In these cases, don't move through the door
-            if (players.P2.row == 3 && players.P2.col == 5) { //player 2 at purple door
-                return "btn-p2-left";
-            }
-            if (players.P2.row == 0 && players.P2.col == 2) { //player 2 at orange door
-                return "btn-p2-left";
-            }
-            if (players.P2.row == 5 && players.P2.col == 2) { //player 2 at red door
-                return "btn-p2-right";
-            }
-            if (players.P2.row == 3 && players.P2.col == 0) { //player 2 at blue door
-                return "btn-p2-up";
-            }
-        }
-
-        if (((Math.abs(players.P2.row - assumedP1Pos.row) + Math.abs(players.P2.col - assumedP1Pos.col)) <= 2) && (players.P1.camouflaged == true)) { //Dist P2P1 without doors taken into account
-            let moveChoices = [];
-            let moveSelectedPosition;
             if (players.P2.glows > 0) {
-                moveChoices.push(1); //add glow choice to array
-                moveChoices.push(1); //make glow choice more likely
-            }
-            moveChoices.push(0); //add attack choice to array
-            moveChoices.push(2); //add camouflage-remain still choice to array
-            let moveSelect = Math.floor(Math.random() * moveChoices.length);
-            moveSelectedPosition = moveChoices[moveSelect];
-            switch (moveSelectedPosition) {
-                case 0:
-                    return "btn-p2-attack";
-                case 1:
-                    return "btn-p2-glow"; //you need more than one situation to glow. Otherwise Player 1 will know to attack after glow
-                case 2:
-                    return "btn-p2-camouflage";
-
+                // Glow: 50%, Attack: 25%, Camouflage: 25%
+                if (rand < 0.5) return "btn-p2-glow";
+                return rand < 0.75 ? "btn-p2-attack" : "btn-p2-camouflage";
+            } else {
+                // Attack: 50%, Camouflage: 50% (since glows are out)
+                return rand < 0.5 ? "btn-p2-attack" : "btn-p2-camouflage";
             }
         }
 
-        if (distP2P1 == 3 && players.P2.camouflaged == true){ //maybe take a chance and sneak in closer, under the radar! Or maybe retreat.
-            let moveChoices = [];
-            let moveSelectedPosition;
+        if (distP2P1 === 3 && players.P1.camouflaged) {
             let possibleChosenKey = null;
             let count = 0;
-            //find a possible move that will keep P1 camouflaged
-            const possibleDirections = [{
-                row: -1,
-                col: 0,
-                key: "btn-p2-up"
-            }, // up
-            {
-                row: 1,
-                col: 0,
-                key: "btn-p2-down"
-            }, // down
-            {
-                row: 0,
-                col: -1,
-                key: "btn-p2-left"
-            }, // left
-            {
-                row: 0,
-                col: 1,
-                key: "btn-p2-right"
-            } // right
+            const possibleDirections = [
+                { row: -1, col: 0, key: "btn-p2-up" },
+                { row: 1, col: 0, key: "btn-p2-down" },
+                { row: 0, col: -1, key: "btn-p2-left" },
+                { row: 0, col: 1, key: "btn-p2-right" }
             ];
+
             while (possibleChosenKey == null && count < 20) {
                 const possibleDir = possibleDirections[Math.floor(Math.random() * possibleDirections.length)];
                 const possibleNewRow = players.P2.row + possibleDir.row;
                 const possibleNewCol = players.P2.col + possibleDir.col;
 
-                // check if move is inside grid and still camouflaged
-                if (possibleNewRow >= 0 && possibleNewRow < gridSize && possibleNewCol >= 0 && possibleNewCol < gridSize && grid[possibleNewRow][possibleNewCol] == players.P2.camouflagedColor) {
-                    possibleChosenKey = possibleDir.key; // store the corresponding key
+                if (possibleNewRow >= 0 && possibleNewRow < gridSize && possibleNewCol >= 0 && possibleNewCol < gridSize && grid[possibleNewRow][possibleNewCol] === players.P2.camouflagedColor) {
+                    possibleChosenKey = possibleDir.key;
                 }
-                count = count + 1;
+                count++;
             }
 
-            moveChoices.push(0); //add camouflage-remain still choice to array
-            
-            if (possibleChosenKey != null){
-                moveChoices.push(1); //move randomly, either closer or farther while camouflaged
-                moveChoices.push(1);
+            let moveChoices = [0]; // Remain still
+            if (possibleChosenKey != null) {
+                moveChoices.push(1, 1); // Move randomly while camouflaged
             }
 
             let moveSelect = Math.floor(Math.random() * moveChoices.length);
-            moveSelectedPosition = moveChoices[moveSelect];
-            switch (moveSelectedPosition) {
-                case 0:
-                    return "btn-p2-camouflage";
-                case 1:
-                    return possibleChosenKey;
-
-            }
-
+            return moveChoices[moveSelect] === 0 ? "btn-p2-camouflage" : possibleChosenKey;
         }
 
-        if (distP2P1 == 3) { //This time take into account doors. This distance is based on "assumed position".
-                             //This assumption can change. So if P1 constantly remains still, P2 doesn't know this, and so this situation isn't locked in.
-             //Camouflage in this situation, later add glow option?
-            randomNumber = Math.random();
-             if (randomNumber < 0.7) {
-                return "btn-p2-camouflage";
-             } else {
-               return "btn-p2-glow";
-            }
-        }
-            
-        
-        //If P2 would lose a race to its winning corner compared to P1 racing to its winning corner,
-        //then P2 should move closer to P1 and not worry about the race.
-        if (distP1ToP2Corner <= distP2ToP1Corner) { //If P2 is closer to P1 than P2 is from the winning corner
-            target = assumedP1Pos;
-            chosenMove = moveToward(players.P2, target);
-            //console.log("chosenMove", chosenMove);
-            return chosenMove;
+        if (distP2P1 === 3) {
+            let randomNumber = Math.random();
+            return randomNumber < 0.7 ? "btn-p2-camouflage" : "btn-p2-glow";
         }
 
+        // Step 4: Strategic Race vs. Hunt Logic
+        if (distP1ToP2Corner <= distP2ToP1Corner) {
+            return moveToward(players.P2, targetPos);
+        }
 
-        //If P2 would win a race to its winning corner compared to P1 racing to its winning corner,
-        //then P2 should move closer to its winning corner.
         if (distP1ToP2Corner > distP2ToP1Corner) {
-            target = P1Corner;
-            chosenMove = moveToward(players.P2, target);
-            return chosenMove;
+            return moveToward(players.P2, P1Corner);
         }
 
-        //Otherwise just move randomly
-        const directions = [{
-                row: -1,
-                col: 0,
-                key: "btn-p2-up"
-            }, // up
-            {
-                row: 1,
-                col: 0,
-                key: "btn-p2-down"
-            }, // down
-            {
-                row: 0,
-                col: -1,
-                key: "btn-p2-left"
-            }, // left
-            {
-                row: 0,
-                col: 1,
-                key: "btn-p2-right"
-            } // right
+        // Step 5: Fallback Random Movement
+        const directions = [
+            { row: -1, col: 0, key: "btn-p2-up" },
+            { row: 1, col: 0, key: "btn-p2-down" },
+            { row: 0, col: -1, key: "btn-p2-left" },
+            { row: 0, col: 1, key: "btn-p2-right" }
         ];
 
         let chosenKey = null;
-
         while (!chosenKey) {
             const dir = directions[Math.floor(Math.random() * directions.length)];
             const newRow = players.P2.row + dir.row;
             const newCol = players.P2.col + dir.col;
 
-            // check if move is inside grid
             if (newRow >= 0 && newRow < gridSize && newCol >= 0 && newCol < gridSize) {
-                chosenKey = dir.key; // store the corresponding key
+                chosenKey = dir.key;
             }
         }
 
