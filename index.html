@@ -13,23 +13,24 @@
 </head>
 <body>
   <div class="game-root">
-    <div id="overlay">
-      <div class="overlay-content">
-        <ul>
-          <h1><center>TactiGrid</center></h1>
-          <p><b>Goal:</b></p>
-          <li>The first player to reach the opposite corner wins.<br>(Opponent's starting tile).</li>
-          <li>The other way to win is with a successful attack.</li>
-          <p><b>Movement and Action Buttons:</b></p>
-          <li>▲ ▼ ◀ ▶, "Move". To remain still, press 🥷🏻 "Camouflage"</li>
-          <li>🥷🏻, "Camouflage" also makes the player the same color as the tile that the player is on.</li>
-          <li>💡, "Glow an opponent" removes the camouflage, and opponent becomes visible.<br>Two glows allowed.</li>
-          <li>🎯, "Attack" has a range of two Manhattan steps.<br>If attack succeeds, you win! <br>If attack fails, the opponent wins!</li>
-          <li>The colored 'doors' at the edges will funnel you back to the center of the grid.</li>
-        </ul><!-- <button id="begin-btn">Begin Game</button> -->
-        <button id="begin-btn-1Player">1 Player</button> <button id="begin-btn-2Player">2 Players</button>
+   <div id="overlay">
+  <div class="overlay-content">
+    <!-- Top section: Mode buttons positioned above the characters -->
+    <div class="top-menu">
+      <div class="mode-buttons">
+        <button id="begin-btn-1Player" class="neon-btn btn-blue">1 Player</button>
+        <button id="begin-btn-2Player" class="neon-btn btn-green">2 Players</button>
       </div>
     </div>
+
+    <!-- Bottom section: Instructions link positioned below the characters -->
+    <div class="bottom-menu">
+      <a href="https://markmcla74.github.io/TactiGrid/" target="_blank" class="instructions-link">
+        📖 View Instructions & Tips
+      </a>
+    </div>
+  </div>
+</div>
 
     <!-- Game Grid -->
      <div class="controls-container">

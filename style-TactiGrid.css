@@ -26,7 +26,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center; /* 👈 Pulled elements together */
-  gap: 60px; /* 👈 Controls distance between top controls, grid, and bottom controls */
+  gap: 55px; /* 👈 Controls distance between top controls, grid, and bottom controls */
   max-width: 600px; /* desktop/tablet */
   margin: 0 auto;
   padding: 8px;
@@ -147,11 +147,12 @@ color: white;
 .p1, .p2 {
   font-size: 4em;
 }
-/* Fullscreen overlay */
+
+/* Fullscreen overlay with TactiGrid background image */
 #overlay {
 position: fixed;
 inset: 0;
-background: rgba(0,0,0,0.5);
+background: url('tactigridOverlay.jpeg') center / cover no-repeat;
 display: flex;
 align-items: center;
 justify-content: center;
@@ -160,43 +161,82 @@ overflow-y: auto;
 }
 
 .overlay-content {
-  background: rgba(255,255,255,0.9);
-  padding: 30px 50px;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  max-width: 420px;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Pushes top-menu UP and bottom-menu DOWN */
+  align-items: center;
 }
 
-.overlay-content h1 {
-  margin-top: 10px; /* 🎯 Shifted down 10px for top clearance */
-  margin-right: 0;
-  margin-bottom: 20px;
-  margin-left: 0;
-  font-size: 2rem;
+/* Top menu positioning (Nudges buttons lower than title, but safely above character art) */
+.top-menu {
+  width: 100%;
+  margin-top: 18vh; /* Adjusts vertical height under the title text */
 }
 
-.overlay-content ul {
-  text-align: left;
-  margin: 0 auto;
-  padding-left: 1.25em;
-  list-style-position: outside;
-  max-width: 48ch;
+.mode-buttons {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  justify-content: center;
 }
 
-.overlay-content ul li {
-  margin-bottom: 0.6em;
+/* Bottom menu positioning (Sits cleanly near the bottom under the characters) */
+.bottom-menu {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 5vh; /* Gives breathing room above the screen edge */
 }
-#begin-btn,
-#begin-btn-1Player,
-#begin-btn-2Player {
-padding: 10px 20px;
-font-size: 1rem;
-border: none;
-border-radius: 8px;
-background: #0077ff;
-color: white;
-cursor: pointer;
+
+/* Styled Neon Buttons */
+.neon-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid #00f3ff;
+  color: #0b2545;
+  padding: 14px 12px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.neon-btn.btn-green {
+  border-color: #00ff88;
+}
+
+.neon-btn:active {
+  transform: scale(0.96);
+}
+
+/* Instructions Link Styling */
+.instructions-link {
+  color: #0b2545;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid #00f3ff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.1s ease, background 0.2s ease;
+}
+
+.instructions-link:active {
+  transform: scale(0.96);
+}
+
+.instructions-link:hover {
+  background: rgba(255, 255, 255, 1);
 }
 
 #begin-btn:hover,
