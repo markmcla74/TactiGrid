@@ -1,8 +1,6 @@
 ## 📖 TactiGrid Rules & Instructions
 <img src="screenshot1UpdatedUI.png" alt="Game Grid" width="600">
-### Goal
-* **Reach the Opposite Corner:** The first player to reach the opposite corner (the opponent's starting tile) wins.
-* **Successful Attack:** The alternative way to win is by executing a successful attack.
+
 
 ### Movement and Action Buttons
 * **◀ ▲ ▶ ▼ ("Move"):** Use the directional buttons to navigate the grid. To remain still on your turn, press 🥷🏻 **"Camouflage"**.
