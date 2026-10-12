@@ -12,7 +12,7 @@
 * **The Doors:** The colored 'doors' located at the outer edges of the grid will funnel you back to the center.
 
 ### 🤫 Local Play Strategy Tip
-* **Cover the Screen:** Since this is a 2-player local pass-and-play game on a single device, make sure to **cover the screen with your hand** when making your secret movement or action choice so your opponent can't peek!
+* **Cover the Screen:** When playing TactiGrid with 2 players, **cover the phone with your hand** when making your secret movement or action choice so your opponent can't peek!
 
 ---
 
