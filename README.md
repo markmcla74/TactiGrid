@@ -1,15 +1,5 @@
-<p align="center">
-  <img src="featureImage.png" alt="App Feature Image" width="600">
-</p>
-
-# TactiGrid
-
-**TactiGrid** is a strategy game featuring hidden movement, camouflage, and a one-time attack on a 6x6 grid. 
-
----
-
-## 📖 Game Rules & Instructions
-
+## 📖 TactiGrid Rules & Instructions
+<img src="screenshot1UpdatedUI.png" alt="Game Grid" width="600">
 ### Goal
 * **Reach the Opposite Corner:** The first player to reach the opposite corner (the opponent's starting tile) wins.
 * **Successful Attack:** The alternative way to win is by executing a successful attack.
