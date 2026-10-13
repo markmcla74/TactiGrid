@@ -11,19 +11,21 @@
   * If the attack fails, **your opponent wins!**
 * **The Doors:** The colored 'doors' located at the outer edges of the grid will funnel you back to the center.
 
-### 🤫 Local Play Strategy Tip
+### 🤫 Two Player Game Play Tip
 * **Cover the Screen:** When playing TactiGrid with 2 players, **cover the phone with your hand** when making your secret movement or action choice so your opponent can't peek!
 
 ---
 
-## 📱 Play as a Web App (PWA)
+## 📱 Install TactiGrid Directly from Browser
 
-"TactiGrid" can feel exactly like a native App Store download using a built-in mobile feature called **"Add to Home Screen."** It places a dedicated game icon right on your phone's home screen for instant access!
+"TactiGrid" can feel just like a native app when installed on your phone using the browser's **Add to Home Screen** or **Install App** feature.
 
-* **📱 On iPhone (Safari):** Tap the Share button at the bottom, scroll down, and tap **Add to Home Screen**.
-* **🤖 On Android (Chrome):** Tap the three dots in the top right, and tap **Add to Home Screen** (or **Install app**).
+* **📱 On iPhone (Safari):** Launch TactiGrid. Tap the **Share** button, scroll down, and tap **Add to Home Screen**.
+[Launch TactiGrid](https://markmcla74.github.io/TactiGrid/)
+* **🤖 On Android (Chrome):** Launch TactiGrid. Tap the **three dots** in the top right, then tap **Add to Home Screen** or **Install app**.
+[Launch TactiGrid](https://markmcla74.github.io/TactiGrid/)
 
-When players launch TactiGrid from their home screen icon, the browser completely hides its top address bar and bottom navigation controls. It opens in glorious full-screen canvas mode, completely indistinguishable from a native app marketplace title.
+Once installed, TactiGrid has its own icon on your home screen and can be launched like any other app.
 
 ---
 
