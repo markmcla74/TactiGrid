@@ -258,6 +258,7 @@
                         document.getElementById("reset-btn").disabled = false;
                         gameOver = true;
                         renderGrid();
+                        updateButtonStates();
                         setTimeout(() => {
                             showMessage(`Player 2 wins with a successful attack!`);
                         }, 50);
@@ -268,6 +269,7 @@
                         document.getElementById("reset-btn").disabled = false;
                         gameOver = true;
                         renderGrid();
+                        updateButtonStates();
                         setTimeout(() => {
                             showMessage(`Player 2 missed! Player 1 wins!`);
                         }, 50);
