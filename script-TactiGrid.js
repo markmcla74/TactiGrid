@@ -32,7 +32,7 @@
         "btn-p2-left": [0, -1],
         "btn-p2-right": [0, 1],
     };
-
+    // --- Inside AudioEngine return object or exposed methods ---
 
     // Players
     let players = {
@@ -162,6 +162,7 @@
         currentPlayer = "P1";
         p1CamouflageTurns = 0; // reset when visible
         gameOver = false;
+        updateButtonStates();
 
 
 
@@ -186,6 +187,7 @@
         // 💡 Sync the glow button UI back to 2 lightbulbs and enable it
         updateGlowButton("P1");
         updateGlowButton("P2");
+
 
 
     }
@@ -226,6 +228,7 @@
                         document.getElementById("reset-btn").disabled = false;
                         gameOver = true;
                         renderGrid();
+                        updateButtonStates();
                         setTimeout(() => {
                             showMessage(`Player 1 wins with a successful attack!`);
                         }, 50);
@@ -236,6 +239,7 @@
                         document.getElementById("reset-btn").disabled = false;
                         gameOver = true;
                         renderGrid();
+                        updateButtonStates();
                         setTimeout(() => {
                         showMessage(`Player 1 missed! Player 2 wins!`);
                         }, 50);
@@ -904,6 +908,7 @@
             AudioEngine.stopAllAfter(2); // both end in 2 seconds
             //  bgAudio.pause();
             //         bgAudio.currentTime = 0;
+            updateButtonStates();
         } else if (players.P2.row === 0 && players.P2.col === 0) {
             showMessage("Player 2 Wins by reaching the corner!");
             players.P2.symbol = "●";
@@ -913,6 +918,7 @@
             AudioEngine.stopAllAfter(2); // both end in 2 seconds
             document.getElementById("reset-btn").disabled = false;
             renderGrid();
+            updateButtonStates();
         }
     }
 
@@ -976,6 +982,7 @@
         let jingleInterval = null;
         let jingleStartTime = 0;
         let isJinglePlaying = false;
+        let isSoundEnabled = true; // Tracks sound state
 
         /* --------------------------------
          *       Unlock audio (required for mobile)
@@ -1050,11 +1057,11 @@
          *    ================================= */
         function startJingle() {
             unlock();
-            if (isJinglePlaying) return;
+            if (isJinglePlaying || !isSoundEnabled) return; // Respect muted state
 
-            // 🔥 restore volume after fade
+            // 🔥 restore volume after fade if sound is enabled
             masterGain.gain.cancelScheduledValues(ctx.currentTime);
-            masterGain.gain.setValueAtTime(0.5, ctx.currentTime);
+            masterGain.gain.setValueAtTime(isSoundEnabled ? 0.5 : 0.0, ctx.currentTime);
 
             isJinglePlaying = true;
 
@@ -1132,6 +1139,27 @@
             masterGain.gain.exponentialRampToValueAtTime(0.0001, fadeEnd);
         }
 
+        /* =================================
+         *       SOUND TOGGLE
+         *    ================================= */
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            if (masterGain) {
+                masterGain.gain.setValueAtTime(isSoundEnabled ? 0.5 : 0.0, ctx.currentTime);
+            }
+
+            if (!isSoundEnabled) {
+                stopJingle(); // Stop the background loop completely when muted
+            } else {
+                // If unmuting while a game is active, restart the jingle
+                const overlay = document.getElementById("overlay");
+                if (overlay && overlay.style.display === "none" && !isJinglePlaying) {
+                    startJingle();
+                }
+            }
+            return isSoundEnabled;
+        }
+
         /* ================================= */
 
         return {
@@ -1140,11 +1168,11 @@
             playVictoryChime,
             startJingle,
             stopJingle,
-            stopAllAfter
+            stopAllAfter,
+            toggleSound
         };
 
     })();
-
 
     function computerChooseMove() {
         // Step 1: Gather Info & Update Position Tracking
@@ -1744,18 +1772,22 @@
             }
         }
     }
-    // Function to enable/disable UI control groups based on turn state
     function updateButtonStates() {
         // Select containers or button groups for P1 and P2
         const p1Buttons = document.querySelectorAll(".p1-control-btn");
         const p2Buttons = document.querySelectorAll(".p2-control-btn");
+        const soundBtn = document.getElementById("sound-btn");
 
         if (gameOver) {
-            // Disable both control sets if game is over
+            // Disable both control sets and the sound button if game is over
             p1Buttons.forEach(btn => btn.disabled = true);
             p2Buttons.forEach(btn => btn.disabled = true);
+            soundBtn.disabled = true;
             return;
         }
+
+        // Ensure sound button is enabled during active gameplay
+        if (soundBtn) soundBtn.disabled = false;
 
         if (currentPlayer === "P1") {
             p1Buttons.forEach(btn => btn.disabled = false);
@@ -1804,6 +1836,10 @@
         });
     }
 
+    document.getElementById("sound-btn").addEventListener("click", () => {
+        const soundOn = AudioEngine.toggleSound();
+        document.getElementById("sound-btn").textContent = soundOn ? "🔊" : "🔇";
+    });
     // Player 1
     document.getElementById("btn-p1-up").addEventListener("click", (e) => handleButtonInput("btn-p1-up", e.currentTarget));
     document.getElementById("btn-p1-down").addEventListener("click", (e) => handleButtonInput("btn-p1-down", e.currentTarget));

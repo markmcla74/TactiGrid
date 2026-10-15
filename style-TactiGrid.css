@@ -377,3 +377,29 @@ filter: grayscale(100%);
     width: clamp(220px, 70vmin, 320px);
   }
 }
+/* Lower-Right Sound Button */
+#sound-btn {
+position: absolute;
+right: 0;
+bottom: 0;
+width: 44px;
+height: 44px;
+padding: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+
+background: transparent;
+border: none;
+box-shadow: none;
+outline: none;
+
+font-size: 1.5rem;
+cursor: pointer;
+transform: scale(1.2);
+transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+#sound-btn:active {
+transform: scale(0.95);
+}
