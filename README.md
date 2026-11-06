@@ -10,10 +10,9 @@
 
 ---
 
-## 📖 TactiGrid Rules & Instructions
+## 📖 Goal: Reach the Opposite Corner, or Successfully Attack
 <p align="center">
   <img src="screenshot1UpdatedUI2p0.png" alt="Game Grid" width="400"><br>
-  <em>Reach the Opposite Corner, or Successfully Attack</em>
 </p>
 
 ### Movement and Action Buttons
