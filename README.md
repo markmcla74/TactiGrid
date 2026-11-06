@@ -1,6 +1,20 @@
-## 📖 TactiGrid Rules & Instructions
-<img src="screenshot1UpdatedUI.png" alt="Game Grid" width="600">
+<p align="center">
+  <img src="readmeFeatureImage.png" alt="TactiGrid Feature Image" width="400">
+</p>
 
+# TactiGrid
+
+**A high stakes dual where you need deception and strategy to defeat your opponent on a 6x6 grid.**
+
+[Launch TactiGrid](https://markmcla74.github.io/TactiGrid/)
+
+---
+
+## 📖 TactiGrid Rules & Instructions
+<p align="center">
+  <img src="screenshot1UpdatedUI2p0.png" alt="Game Grid" width="400"><br>
+  <em>Reach the Opposite Corner, or Successfully Attack</em>
+</p>
 
 ### Movement and Action Buttons
 * **◀ ▲ ▶ ▼ ("Move"):** Use the directional buttons to navigate the grid. To remain still on your turn, press 🥷🏻 **"Camouflage"**.
@@ -11,21 +25,19 @@
   * If the attack fails, **your opponent wins!**
 * **The Doors:** The colored 'doors' located at the outer edges of the grid will funnel you back to the center.
 
-### 🤫 Two Player Game Play Tip
+### 🤫 Local Play Strategy Tip
 * **Cover the Screen:** When playing TactiGrid with 2 players, **cover the phone with your hand** when making your secret movement or action choice so your opponent can't peek!
 
 ---
 
-## 📱 Install TactiGrid Directly from Browser
+## 📱 Play as a Web App (PWA)
 
-"TactiGrid" can feel just like a native app when installed on your phone using the browser's **Add to Home Screen** or **Install App** feature.
+"TactiGrid" can feel exactly like a native App Store download using a built-in mobile feature called **"Add to Home Screen."** It places a dedicated game icon right on your phone's home screen for instant access!
 
-* **📱 On iPhone (Safari):** Launch TactiGrid. Tap the **Share** button, scroll down, and tap **Add to Home Screen**.
-[Launch TactiGrid](https://markmcla74.github.io/TactiGrid/)
-* **🤖 On Android (Chrome):** Launch TactiGrid. Tap the **three dots** in the top right, then tap **Add to Home Screen** or **Install app**.
-[Launch TactiGrid](https://markmcla74.github.io/TactiGrid/)
+* **📱 On iPhone (Safari):** Tap the Share button at the bottom, scroll down, and tap **Add to Home Screen**.
+* **🤖 On Android (Chrome):** Tap the three dots in the top right, and tap **Add to Home Screen** (or **Install app**).
 
-Once installed, TactiGrid has its own icon on your home screen and can be launched like any other app.
+When players launch TactiGrid from their home screen icon, the browser completely hides its top address bar and bottom navigation controls. It opens in glorious full-screen canvas mode, completely indistinguishable from a native app marketplace title.
 
 ---
 
