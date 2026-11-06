@@ -12,7 +12,7 @@
 
 ## 📖 Goal: Reach the Opposite Corner, or Successfully Attack
 <p align="center">
-  <img src="screenshot1UpdatedUI2p0.png" alt="Game Grid" width="400"><br>
+  <img src="screenshot1UpdatedUI2p0.png" alt="Game Grid" width="200"><br>
 </p>
 
 ### Movement and Action Buttons
