@@ -4,7 +4,7 @@
 
 # TactiGrid
 
-**A high stakes dual where you need deception and strategy to defeat your opponent on a 6x6 grid.**
+**Outsmart your opponent on a 6x6 grid by blending into the terrain and hunting your opponent, or racing to the opposite corner.**
 
 [Launch TactiGrid](https://markmcla74.github.io/TactiGrid/)
 
