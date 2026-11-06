@@ -4,7 +4,7 @@
 
 # TactiGrid
 
-**Outsmart your opponent on a 6x6 grid by blending into the terrain and hunting your opponent, or racing to the opposite corner.**
+**Blend into the terrain and stalk your opponent, or race to the opposite corner.**
 
 [Launch TactiGrid](https://markmcla74.github.io/TactiGrid/)
 
@@ -22,7 +22,7 @@
 * **🎯 ("Attack"):** Has a range of two Manhattan steps. 
   * If the attack succeeds, **you win!** 
   * If the attack fails, **your opponent wins!**
-  * Remember that you may also win by **reaching the opposite corner**
+  * Remember that you may also win by **reaching the opposite corner.**
 * **The Doors:** The colored 'doors' located at the outer edges of the grid will funnel you back to the center.
 
 ### 🤫 Local Play Strategy Tip
