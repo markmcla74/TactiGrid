@@ -22,6 +22,7 @@
 * **🎯 ("Attack"):** Has a range of two Manhattan steps. 
   * If the attack succeeds, **you win!** 
   * If the attack fails, **your opponent wins!**
+  * Remember that you may also win by **reaching the opposite corner**
 * **The Doors:** The colored 'doors' located at the outer edges of the grid will funnel you back to the center.
 
 ### 🤫 Local Play Strategy Tip
